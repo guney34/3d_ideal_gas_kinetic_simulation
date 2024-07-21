@@ -11,7 +11,7 @@ struct particle
 
 	particle(double r = 1, const vector& p = vector(),
 		const vector& a = vector())
-		: rad(r), pos(p), vel(a) {}
+		: pos(p), vel(a), rad(r) {}
 
 	void move(double t); //moves particle by vt
 

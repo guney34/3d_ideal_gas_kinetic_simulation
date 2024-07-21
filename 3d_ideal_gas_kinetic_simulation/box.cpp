@@ -2,14 +2,10 @@
 
 namespace idg
 {
-void box::addParticle(const particle& p)
+double box::timeToWallCollision(unsigned int wall, const particle& p) const
 {
-	particles.push_back(p);
-}
-
-double box::timeToWallCollision(int wall, const particle& p) const
-{
-	double twc, x, v;
+	double twc;
+	double x = 0, v = 0;
 
 	//Obtain the required components for vel and pos
 	switch (wall)
@@ -38,11 +34,10 @@ double box::timeToWallCollision(int wall, const particle& p) const
 	else {
 		twc = FLT_MAX;
 	}
-
 	return twc;
 }
 
-void box::doWallCollision(int wall, particle& p)
+void box::doWallCollision(unsigned int wall, particle& p)
 {
 	//Move the particle to the collision point
 	p.move(timeToWallCollision(wall, p));
@@ -68,16 +63,17 @@ void box::doWallCollision(int wall, particle& p)
 double box::Step()
 {
 	double timeToNextCollision = FLT_MAX;
-	int collisionType = 0, collider1 = -1, collider2 = -1;
+	unsigned int collisionType = 0;
+	int collider1 = -1, collider2 = -1;
 
 	//Loop over all particles
-	for (int i = 0; i < particles.size(); i++) {
+	for (unsigned int i = 0; i < particles.size(); ++i) {
 
 		double t1 = timeToWallCollision(1, particles[i]);
 		double t2 = timeToWallCollision(2, particles[i]);
 		double t3 = timeToWallCollision(3, particles[i]);
 		double tW;   //Shortest time for a wall collision
-		int wall;
+		unsigned int wall;
 
 		//Find the shortest time to a wall collision
 		if (t1 < t2 && t1 < t3)
@@ -100,12 +96,12 @@ double box::Step()
 		if (tW < timeToNextCollision)
 		{
 			timeToNextCollision = tW;
-			collider1 = i;
+			collider1 = (signed int)i;
 			collisionType = wall;
 		}
 
 		//Starts at i+1 so every particle is compared to every other particle only once
-		for (int j = i + 1; j < particles.size(); j++)
+		for (unsigned int j = i + 1; j < particles.size(); ++j)
 		{
 			//Shortest time for particle collision
 			double tP = particles[i].timeToCollision(particles[j]);
@@ -115,16 +111,16 @@ double box::Step()
 			{
 				timeToNextCollision = tP;
 				collisionType = 0;
-				collider1 = i;
-				collider2 = j;
+				collider1 = (signed int)i;
+				collider2 = (signed int)j;
 			}
 		}
 	}
 
 	//Collide collider particles
-	if (collisionType == 0)
+	if ((collisionType == 0) && (collider1 >= 0) && (collider2 >= 0))
 	{
-		particles[collider1].collideParticles(particles[collider2]);
+		particles[(unsigned int)collider1].collideParticles(particles[(unsigned int)collider2]);
 	}
 	else
 	{
@@ -132,14 +128,13 @@ double box::Step()
 	}
 
 	//Move all non-collider particles by vt
-	for (int k = 0; k < particles.size(); k++)
+	for (unsigned int k = 0; k < particles.size(); k++)
 	{
-		if (k != collider1 && k != collider2)
+		if ((signed int)k != collider1 && (signed int)k != collider2)
 		{
 			particles[k].move(timeToNextCollision);
 		}
 	}
-
 	return timeToNextCollision;
 }
 
@@ -148,13 +143,12 @@ std::vector<int> box::nParticlesOctant() const
 {
 	std::vector<int> particlesOctant = { 0,0,0,0,0,0,0,0 };
 
-	for (int i = 0; i < particles.size(); i++)
+	for (unsigned i = 0; i < particles.size(); ++i)
 	{
-		++particlesOctant[((static_cast<int>(particles[i].pos.x) >= 0) << 2) //x>=0 represented as 100
-			+ ((static_cast<int>(particles[i].pos.y) >= 0) << 1) //y>=0 represented as 010
-			+ (static_cast<int>(particles[i].pos.z) >= 0)];      //z>=0 represented as 001
+		++particlesOctant[(((int)(particles[i].pos.x) >= 0) << 2) //x>=0 represented as 100
+			+ (((int)(particles[i].pos.y) >= 0) << 1) //y>=0 represented as 010
+			+ ((int)(particles[i].pos.z) >= 0)];      //z>=0 represented as 001
 	}
-
 	return particlesOctant;
 }
 }

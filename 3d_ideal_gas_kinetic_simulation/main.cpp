@@ -4,14 +4,14 @@
 #include <fstream>
 #include "random.h"
 
+constexpr int seed = 103; //pseudorandom number generator seed
+constexpr int numParticles = 1000;
+constexpr int numCollisions = 10000;
+constexpr int numDataPoints = 50;
+constexpr int boxSize = 500; //relative to particle radius = 1
+
 int main()
 {
-	int seed = 103; //pseudorandom number generator seed
-	int numParticles = 1000;
-	int numCollisions = 1000;
-	int numDataPoints = 50;
-	int boxSize = 500; //relative to particle radius = 1
-	
 	//unit testing
 	if (test1()) std::cout << "Test 1 SUCCESS" << std::endl;
 	else std::cout << "Test 1 FAILED" << std::endl;
@@ -55,7 +55,7 @@ int main()
 			Random::randomNorm(0, 10));
 
 		idg::particle particle(1, p, v);
-		box.addParticle(particle);
+		box.particles.push_back(particle);
 	}
 
 	std::ofstream f("data.csv"); //data, csv format
@@ -89,6 +89,4 @@ int main()
 		}
 	}
 	f.close();
-	int x;
-	std::cin >> x;
 }
